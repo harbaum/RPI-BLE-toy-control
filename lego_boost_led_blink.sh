@@ -31,7 +31,7 @@ else
             # erste drei Bytes einer MAC-Adresse ist die sog.
             # OID, die den Hersteller kennzeichnet
             OID=`echo $MAC | cut -d':' -f 1-3`
-	    
+            
 	    # eine gültige MAC-Adresse ist 17 Zeichen lang
 	    if [ "${#MAC}" == "17" ]; then
 		# suche solange kein passender Controller gefunden wurde
@@ -40,10 +40,12 @@ else
 		    # Test, ob ein gültiger Gerätename erkannt wurde
 		    NAME=`echo $line | cut -d " " -f2-`
 		    
-                    # erweitertes hcitool wird "NAME ..." liefern
-                    if [ "$OID" == "00:16:53" ] &&
-                       ( [ "$NAME" == "NAME LEGO Move Hub" ] ||
-                         [ "$NAME" ==      "LEGO Move Hub" ] ); then
+                    # erweitertes hcitool wird "UUID128 ..." liefern, das originale
+                    # hcitool lediglich den Namen. Unverändert ist dieser "LEGO Move Hub"
+                    # Ein Boost mit verändertem Naman kann daher mit dem originalen hcitool nicht
+                    # erkannt werden.
+                    if ( [ "$NAME" == "UUID128 00001623-1212-EFDE-1623-785FEABCD123" ] ||
+                         ( [ "$OID" == "00:16:53" ] && [ "$NAME" == "LEGO Move Hub" ] ) ); then
 			
 			echo "Lego Boost-Controller erkannt: $MAC"
 			LWH=$MAC
