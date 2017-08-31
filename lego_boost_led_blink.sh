@@ -80,10 +80,10 @@ if [ "$LEGO_SRV" != "" ]; then
 	# blinken ...
 	while true; do
 	    # setze LED-Farbe auf Orange
-	    gatttool -b $LWH --char-write-req -a $LEGO_OUT_HDL -n 0800813211510008 # 06040108
+	    gatttool -b $LWH --char-write-req -a $LEGO_OUT_HDL -n 0800813211510008
 	    sleep 1
 	    # setze LED-Farbe auf Blau
-	    gatttool -b $LWH --char-write-req -a $LEGO_OUT_HDL -n 0800813211510003 # 06040103
+	    gatttool -b $LWH --char-write-req -a $LEGO_OUT_HDL -n 0800813211510003
 	    sleep 1
 	done    
     fi
