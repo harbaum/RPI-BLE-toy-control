@@ -14,12 +14,16 @@ class ToyDeviceManager(gatt.DeviceManager):
         self.connected_device = None
 
     def device_discovered(self, device):
-        # teste auf TI-OID und passenden Gerätenamen
+        # teste auf TI-OID und passenden Gerätenamen für WeDo-Hub,
+        # auf LNT-OID für fischertechnik und auf Lego-OID für Boost-
+        # Controller
         if(((":".join(device.mac_address.split(':')[0:3]) == "a0:e6:f8") and
             (device.alias() == "LPF2 Smart Hub 2 I/O")) or
            ((":".join(device.mac_address.split(':')[0:3]) == "10:45:f8") and
-            (device.alias() == "BT Smart Controller"))):
-           
+            (device.alias() == "BT Smart Controller")) or
+           ((":".join(device.mac_address.split(':')[0:3]) == "00:16:53") and
+            (device.alias() == "LEGO Move Hub"))):
+
             self.stop_discovery()
             # verbinde, wenn noch nicht verbunden
             if not self.connected_device:

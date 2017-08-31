@@ -65,5 +65,7 @@ while true; do
 		echo "Batterie-Level: $((16#$BATT_LVL))%"
 	    fi
 	fi
+    else
+	echo "Kein Batterie-Service vorhanden"
     fi
 done		
