@@ -21,6 +21,8 @@ class ToyDeviceManager(gatt.DeviceManager):
             (device.alias() == "LPF2 Smart Hub 2 I/O")) or
            ((":".join(device.mac_address.split(':')[0:3]) == "10:45:f8") and
             (device.alias() == "BT Smart Controller")) or
+           ((":".join(device.mac_address.split(':')[0:3]) == "10:45:f8") and
+            (device.alias() == "BT Control Receiver")) or
            ((":".join(device.mac_address.split(':')[0:3]) == "00:16:53") and
             (device.alias() == "LEGO Move Hub"))):
 

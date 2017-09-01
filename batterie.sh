@@ -52,7 +52,7 @@ while true; do
 	SH=`echo $BATT_SRV | cut -d' ' -f3`
 	EH=`echo $BATT_SRV | cut -d' ' -f6`
 	echo "Batterie-Service-Handles: $SH bis $EH"
-	
+
 	# Hole alle Charakteristiken dieses Dienstes
 	BATT_LVL_CHAR=`gatttool -b $MAC --char-desc -s 0x$SH -e 0x$EH | grep 00002a19-0000-1000-8000-00805f9b34fb`
 	

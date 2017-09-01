@@ -1,8 +1,9 @@
 # BLE-Beispiele
 
 Dieses Repository enthält Beispiele zur Bluetooth-LE-Kopplung von
-Raspberry-Pi3 und fischertechnik-BT-Smart-Controller
-bzw. Lego-WeDo-2.0-Hub wie in [c't 18/2017 S. 144ff](https://www.heise.de/ct/ausgabe/2017-18-Spielzeug-Roboter-mit-dem-Raspberry-Pi-steuern-3798159.html) beschrieben.
+Raspberry-Pi3 und fischertechnik-BT-Smart-Controller,
+fischertechnik-BT-Control-Receiver oder einem Lego-WeDo-2.0-Hub wie in
+[c't 18/2017 S. 144ff](https://www.heise.de/ct/ausgabe/2017-18-Spielzeug-Roboter-mit-dem-Raspberry-Pi-steuern-3798159.html) beschrieben.
 
 ## Shell-Skripte
 
@@ -15,9 +16,17 @@ laufen auf einem Raspbian-Jessie-Lite-Standardinstallation.
 
 - [`ft_bt_smart_led_blink.sh`](ft_bt_smart_led_blink.sh) ist eim
   einfaches Bash-Shellskript, das die orange und blaue LED des
-  BT-Smakrt-Controller im Wechsel blinken lässt. Wird das Skript ohne
+  BT-Smart-Controller im Wechsel blinken lässt. Wird das Skript ohne
   Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
   Controller. Dafür sind root-Rechte nötig. Wird eine
+  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
+  und es sind keine Root-Rechte nötig.
+
+- [`ft_bt_remote_led_blink.sh`](ft_bt_remote_led_blink.sh) ist eim
+  einfaches Bash-Shellskript, das die orange und blaue LED des
+  BT-Control-Receivers im Wechsel blinken lässt. Wird das Skript ohne
+  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
+  Empfänger. Dafür sind root-Rechte nötig. Wird eine
   Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
   und es sind keine Root-Rechte nötig.
 
@@ -47,3 +56,8 @@ die nötgen Änderungen automatisch vor.
   dem Lego-WeDo-2.0-Baukasten. Der Bewegungssensor wird ausgewertet,
   um die LED am Dino zu färben. Befindet sich ein Hindernis direkt vor
   dem Dino, dann wird zusätzlich der Motor eingeschaltet.
+
+- [`ft_rc_racer.py`](ft_rc_racer.py) kontrolliert das
+  Rennauto aus dem BT-Racing-Set. Er beschleunigt sanft, fährt
+  2 Sekunden gerade, lenkt ein, fährt 2 Sekunden um die Kurve und
+  bremst dann sanft ab.
