@@ -37,6 +37,13 @@ laufen auf einem Raspbian-Jessie-Lite-Standardinstallation.
   Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
   und es sind keine Root-Rechte nötig.
 
+- [`lego_boost_led_blink.sh`](lego_boost_led_blink.sh) blinkt mit der
+  LED des Boost-Hub im Wechsel orange und blau. Wird das Skript ohne
+  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
+  Controller. Dafür sind root-Rechte nötig. Wird eine
+  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
+  und es sind keine Root-Rechte nötig.
+
 ## Python-Skripte
 
 Die Python-Skripte benötigen neben der bereits bei der
@@ -61,3 +68,13 @@ die nötgen Änderungen automatisch vor.
   Rennauto aus dem BT-Racing-Set. Er beschleunigt sanft, fährt
   2 Sekunden gerade, lenkt ein, fährt 2 Sekunden um die Kurve und
   bremst dann sanft ab.
+
+- [`lego_boost_color_echo.py`](lego_boost_color_echo.py) liest einen
+  Farbwert vom angeschlossenen Farbsensor und "spiegelt" diese Farbe
+  an der eingebauten LED.
+
+- [`lego_boost_monitor.py`](lego_boost_monitor.py) gibt alle bekannten
+  Ereignisse im Klartext aus. Dabei werden auch WeDo-2.0-Sensoren
+  am Boost erkannt und deren Werte ausgegeben. Beinhaltet eine
+  komplette Boost-Klasse zum Lesen und Setzen aller bekannten
+  Sensoren und Aktoren inkl. aller Sensoren und Aktoren des WeDo-2.0
