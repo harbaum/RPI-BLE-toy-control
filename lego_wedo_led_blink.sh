@@ -48,7 +48,7 @@ else
 			LWH=$MAC
 			
 			# Suche erfolgreich, beende hcitool
-			killall -INT hcitool
+			killall -s SIGINT hcitool
 		    fi
 		fi
 	    fi

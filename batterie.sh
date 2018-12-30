@@ -38,7 +38,7 @@ while true; do
 		    ALLMACS+=($MAC)
 		
 		    # Neues Gerät erkannt, beende Suche
-		    killall -INT hcitool
+		    killall -s SIGINT hcitool
 		fi
             fi
 	done

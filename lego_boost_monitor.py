@@ -9,8 +9,15 @@
 # die Meldungen aller Sensoren ein und gibt kontinuerlich deren
 # Zustand aus.
 
-import gatt, sys, struct
+import sys, struct
 import threading
+
+try:
+    import gatt
+except ModuleNotFoundError as e:
+    print("Error loading gatt module:", e);
+    print("You may install it via 'pip3 install gatt' ...");
+    exit(-1);
 
 # GATT Device-Manager, um selektiv nach Lego-Boost-Controllern zu suchen
 class BoostDeviceManager(gatt.DeviceManager):
@@ -59,7 +66,7 @@ class BoostDevice(gatt.Device):
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
-    DEVICES = { "WeDo-2.0 motor": 0x01, "Voltage sensor": 0x14, "Current sensor": 0x15,
+    DEVICES = { "WeDo-2.0 motor": 0x01, "White LED pair": 0x08, "Voltage sensor": 0x14, "Current sensor": 0x15,
                 "Speaker": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
                 "WeDo-2.0 motion sensor": 0x23, "WeDo-2.0 generic sensor": 0x24,
                 "Boost color and distance sensor": 0x25, "Boost interactive motor": 0x26,
@@ -251,14 +258,14 @@ class BoostDevice(gatt.Device):
         for name, lid in self.PORTS.items():
             if lid == id:
                 return ticks + name + ticks
-        return "<unknown>"
+        return "<unknown port id: "+str(id)+">"
     
     def device_name(self, id, ticks=""):
         # Gerätename aus Geräte-Index ableiten
         for name, lid in self.DEVICES.items():
             if lid == id:
                 return ticks + name + ticks
-        return "<unknown>"
+        return "<unknown device id: "+str(id)+">"
         
     def characteristic_value_updated(self, characteristic, value):
         # teste, ob Längenfeld stimmt, ignoriere die Meldung falls nicht
@@ -300,6 +307,9 @@ class BoostDevice(gatt.Device):
                 if dev == 0x01:
                     self.motor_run(port, 25)
                       
+                if dev == 0x08:
+                    self.motor_run(port, 100)   # the LED pair uses the same command as the simple motor
+                    
                 if dev == 0x14:
                     self.voltage_sensor_set_mode(port, 0)
 
