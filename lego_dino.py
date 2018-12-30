@@ -9,7 +9,14 @@
 
 # https://github.com/cpseager/WeDo2-BLE-Protocol
 
-import gatt, sys, struct
+try:
+    import gatt
+except ModuleNotFoundError as e:
+    print("Error loading gatt module:", e);
+    print("You may install it via 'pip3 install gatt' ...");
+    exit(-1);
+    
+import sys, struct
 import threading
 
 # GATT Device-Manager, um selektiv nach Lego-Controllern zu suchen

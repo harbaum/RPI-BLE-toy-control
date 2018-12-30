@@ -7,7 +7,14 @@
 # Einfaches Python-Beispiel, um per GATT auf den Lego
 # Boost-Controller zuzugreifen.
 
-import gatt, sys, struct
+try:
+    import gatt
+except ModuleNotFoundError as e:
+    print("Error loading gatt module:", e);
+    print("You may install it via 'pip3 install gatt' ...");
+    exit(-1);
+    
+import sys, struct
 import threading
 
 print("Für dieses Programm muss der Farbsensor am Boost-Controller")

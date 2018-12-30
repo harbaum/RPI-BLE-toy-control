@@ -4,7 +4,14 @@
 # Verwendet python-gatt
 # https://github.com/getsenic/gatt-python
 
-import gatt, sys, struct
+try:
+    import gatt
+except ModuleNotFoundError as e:
+    print("Error loading gatt module:", e);
+    print("You may install it via 'pip3 install gatt' ...");
+    exit(-1);
+
+import sys, struct
 import threading
 
 # GATT Device-Manager, um selektiv nach Spielzeug-Controllern zu suchen
