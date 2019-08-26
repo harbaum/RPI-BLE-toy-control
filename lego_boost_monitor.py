@@ -61,16 +61,21 @@ class BoostDevice(gatt.Device):
     WEDO_TILT = { "flat": 0, "backward": 3, "right": 5, "left": 7, "forward": 9 }
 
     # Klartextbezeichnungen der Anschlüsse (auch interne)
-    PORTS = { "C": 0x01, "D": 0x02, "A": 0x37, "B": 0x38, "A+B": 0x39,
-              "LED": 0x32, "Int. tilt": 0x3a, "Current": 0x3b, "Voltage": 0x3c }
+    PORTS = { "A": 0x00, "B": 0x01, "C": 0x02, "D": 0x03, "A+B": 0x10,
+              "LED": 0x32, "Int. tilt": 0x3a, "Current": 0x3b,
+              "Voltage": 0x3c, "Boost unknown port": 0x46}
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
-    DEVICES = { "WeDo-2.0 motor": 0x01, "White LED pair": 0x08, "Voltage sensor": 0x14, "Current sensor": 0x15,
+    DEVICES = { "WeDo-2.0 motor": 0x01, "White LED pair": 0x08,
+                "Voltage sensor": 0x14, "Current sensor": 0x15,
                 "Speaker": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
                 "WeDo-2.0 motion sensor": 0x23, "WeDo-2.0 generic sensor": 0x24,
-                "Boost color and distance sensor": 0x25, "Boost interactive motor": 0x26,
-                "Boost builtin motor": 0x27, "Boost builtin tilt sensor": 0x28 }
+                "Boost color and distance sensor": 0x25,
+                "Boost interactive motor": 0x26,
+                "Boost builtin motor": 0x27,
+                "Boost builtin tilt sensor": 0x28,
+                "Boost unknown device": 0x42 }
                 
     def __init__(self, mac_address, manager):
         super().__init__(mac_address, manager)
