@@ -21,14 +21,17 @@ except ModuleNotFoundError as e:
 
 # GATT Device-Manager, um selektiv nach Lego-Boost-Controllern zu suchen
 class BoostDeviceManager(gatt.DeviceManager):
+    OIDS = [ "00:16:53", "90:84:2b" ] 
+    NAMES = [ "LEGO Move Hub", "HUB NO.4" ]
+    
     def __init__(self, adapter_name='hci0'):
         super().__init__(adapter_name=adapter_name)
         self.connected_device = None
 
     def device_discovered(self, device):
         # teste auf TI-OID und passenden Gerätenamen
-        if((":".join(device.mac_address.split(':')[0:3]) == "00:16:53") and
-           (device.alias() == "LEGO Move Hub")):
+        if((":".join(device.mac_address.split(':')[0:3]).lower() in self.OIDS) and
+           (device.alias() in self.NAMES )):
             self.stop_discovery()
             # verbinde, wenn noch nicht verbunden
             if not self.connected_device:
