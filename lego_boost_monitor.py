@@ -22,7 +22,7 @@ except ModuleNotFoundError as e:
 # GATT Device-Manager, um selektiv nach Lego-Boost-Controllern zu suchen
 class BoostDeviceManager(gatt.DeviceManager):
     OIDS = [ "00:16:53", "90:84:2b" ] 
-    NAMES = [ "LEGO Move Hub", "HUB NO.4" ]
+    NAMES = [ "LEGO Move Hub", "HUB NO.4", "Technic Hub" ]
     
     def __init__(self, adapter_name='hci0'):
         super().__init__(adapter_name=adapter_name)
@@ -62,11 +62,20 @@ class BoostDevice(gatt.Device):
     TILT = { "flat": 0, "backward": 1, "forward": 2, "right": 3, "left": 4, "upside down": 5 }
 
     WEDO_TILT = { "flat": 0, "backward": 3, "right": 5, "left": 7, "forward": 9 }
+    
+    IMPACT = { "still": 0, "light hit": 1, "heavy hit/shake": 2, "shake": 3, "falling": 4 }
 
     # Klartextbezeichnungen der Anschlüsse (auch interne)
     PORTS = { "A": 0x00, "B": 0x01, "C": 0x02, "D": 0x03, "A+B": 0x10,
               "LED": 0x32, "Int. tilt": 0x3a, "Current": 0x3b,
-              "Voltage": 0x3c, "Boost unknown port": 0x46}
+              "Voltage": 0x3c,
+              "CPU": 0x3d,
+              "Boost unknown internal port": 0x46,
+              "Temperature": 0x60,                    # seen on technic hub
+              "Accelerometer": 0x61,                  # seen on technic hub
+              "Gyroscope": 0x62,                      # seen on technic hub
+              "Angle": 0x63,                          # seen on technic hub
+              "Impact sensor": 0x64 }                 # seen on technic hub
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
@@ -77,7 +86,13 @@ class BoostDevice(gatt.Device):
                 "Boost color and distance sensor": 0x25,
                 "Boost interactive motor": 0x26,
                 "Boost builtin motor": 0x27,
-                "Boost builtin tilt sensor": 0x28,
+                "Technic interactive motor M": 0x2e,
+                "Technic interactive motor L": 0x2f,
+                "Impact sensor": 0x36,
+                "Accelerometer": 0x39,
+                "Gyroscope": 0x3a,
+                "Tilt": 0x3b,
+                "Thermometer": 0x3c,
                 "Boost unknown device": 0x42 }
                 
     def __init__(self, mac_address, manager):
@@ -168,6 +183,9 @@ class BoostDevice(gatt.Device):
 
     def request_device_name(self):
         self.send_cmd(0x01, struct.pack(">bbb", 1, 2, 0))  # die '1' adressiert den Gerätenamen (vgl. Button)
+
+    def generic_set_mode(self, port, mode):
+        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
 
     def color_dist_sensor_set_mode(self, port, mode):
         # mode = 0: Vier Bytes-Ergebnis, letztes Byte scheint Hindernis anzuzeigen
@@ -261,6 +279,12 @@ class BoostDevice(gatt.Device):
                 return ticks + name + ticks
         return "<unknown>"
     
+    def impact_name(self, id, ticks=""):
+        for name, lid in self.IMPACT.items():
+            if lid == id:
+                return ticks + name + ticks
+        return "<unknown>"
+    
     def port_name(self, id, ticks=""):
         # Portname aus Port-Index ableiten
         for name, lid in self.PORTS.items():
@@ -329,14 +353,14 @@ class BoostDevice(gatt.Device):
                     
                 if dev == 0x23:
                     self.wedo_motion_sensor_set_mode(port, 1)
-                    
+                
                 # wenn ein Farbsensor gefunden wurde, dann schalte ihn ein
                 if dev == 0x25:
                     self.color_dist_sensor_set_mode(port, 8)  # z.B. 6 ist RGB, 8 ist Farb-Index+Distanz
                     
                 # Wenn ein interaktiver Motor gefunden wurde: Drehe ihn einmal
                 # langsam 360°
-                if dev == 0x26:
+                if dev == 0x26 or dev == 0x2e or dev == 0x2f:
                     self.motor_report_rotation(port, 2)
                     self.motor_run_angle(port, 25, 360)  
 
@@ -347,6 +371,30 @@ class BoostDevice(gatt.Device):
                 if dev == 0x28:
                     self.tilt_sensor_set_mode(port, 0)
         
+                # technic hub sensor "impact" sensor
+                if dev == 0x36:
+                    self.generic_set_mode(port, 0)
+
+                # technic hub 3 axis accelerometer
+                if dev == 0x39:
+                    self.generic_set_mode(port, 0)
+
+                # technic hub 3 axis gyroscope
+                if dev == 0x3a:
+                    self.generic_set_mode(port, 0)
+
+                # technic hub 3 axis angle
+                if dev == 0x3b:
+                    self.generic_set_mode(port, 0)
+                
+                # temperature
+                if dev == 0x3c:
+                    self.generic_set_mode(port, 0)
+                
+                # unknown boost sensor
+                if dev == 0x42:
+                    pass
+              
             elif event == 2:
                 # Event 2: Eine Verbindung zwischen zwei Ports wird angezeigt.
                 # Dies wird vom Boost genutzt, um die beiden internen Motoren
@@ -412,7 +460,8 @@ class BoostDevice(gatt.Device):
                     print("unerwartete Farbsensorantwort:", value[4:])
 
             # Motor als Winkelsensor
-            elif self.device_on_port[port] == 0x26 or self.device_on_port[port] == 0x27:
+            elif (self.device_on_port[port] == 0x26 or self.device_on_port[port] == 0x27 or
+                  self.device_on_port[port] == 0x2e or self.device_on_port[port] == 0x2f):
                 if len(value[4:]) == 1:
                     angle = struct.unpack('<b', value[4:])[0]
                     print("Motorwinkel seit letztem Report:", angle)                    
@@ -432,9 +481,49 @@ class BoostDevice(gatt.Device):
                     print("Neigung X°/Y°:",  x, y)
                 else:
                     print("Neigung: unbekanntes Format:", value[4:])
+
+            # technic hub "impact" sensor
+            elif self.device_on_port[port] == 0x36:
+                if len(value[4:]) == 1:
+                    i = struct.unpack('<B', value[4:])[0]
+                    print("Impact:", self.impact_name(i))
+                else:
+                    print("Impact: unknown format", value[4:])
+                    
+            # technic hub accelerometer
+            elif self.device_on_port[port] == 0x39:
+                if len(value[4:]) == 6:
+                    x, y, z = struct.unpack('<hhh', value[4:])
+                    print("Acceleration X/Y/Z:",  x, y, z)
+                else:
+                    print("Acceleration: unknown format", value[4:])
                 
+            # technic hub gyroscope
+            elif self.device_on_port[port] == 0x3a:
+                if len(value[4:]) == 6:
+                    x, y, z = struct.unpack('<hhh', value[4:])
+                    print("Gyroscope X/Y/Z:",  x, y, z)
+                else:
+                    print("Gyroscope: unknown format", value[4:])
+                    
+            # technic hub tilt
+            elif self.device_on_port[port] == 0x3b:
+                if len(value[4:]) == 6:
+                    x, y, z = struct.unpack('<hhh', value[4:])
+                    print("Tilt X/Y/Z:",  x, y, z)
+                else:
+                    print("Tilt: unknown format", value[4:])
+                    
+            # technic hub temperature sensors
+            elif self.device_on_port[port] == 0x3c:
+                if len(value[4:]) == 2:
+                    t = struct.unpack('<h', value[4:])[0] * 0.1
+                    print("temperature: {:3.1f}°C".format(t))
+                else:
+                    print("temperature: unknown format", value[4:])
+                    
             else:
-                print("unbekannter Sensor!!")
+                print("unbekannter Sensor: ", self.device_on_port[port], ":", value[4:])
             
         elif type == 0x47:
             # Diese Antwort erfolgt auf Sensor-Konfigurationen
