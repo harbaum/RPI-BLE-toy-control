@@ -370,7 +370,7 @@ class BoostDevice(gatt.Device):
                 # wenn ein Tiltsensor gefunden wurde, dann schalte ihn ein
                 if dev == 0x28:
                     self.tilt_sensor_set_mode(port, 0)
-        
+                    
                 # technic hub sensor "impact" sensor
                 if dev == 0x36:
                     self.generic_set_mode(port, 0)
@@ -393,7 +393,7 @@ class BoostDevice(gatt.Device):
                 
                 # unknown boost sensor
                 if dev == 0x42:
-                    pass
+                    self.generic_set_mode(port, 0)
               
             elif event == 2:
                 # Event 2: Eine Verbindung zwischen zwei Ports wird angezeigt.
@@ -521,6 +521,18 @@ class BoostDevice(gatt.Device):
                     print("temperature: {:3.1f}°C".format(t))
                 else:
                     print("temperature: unknown format", value[4:])
+                    
+            # unknown boost sensor, always returns one single 00 byte
+            elif self.device_on_port[port] == 0x42:
+                if len(value[4:]) == 1:
+                    b = struct.unpack('<B', value[4:])[0]
+                    print("boost: ", b)
+                    if b!= 0:
+                        print("!= 0!!!")
+                        exit(-1)
+                else:
+                    print("boost: unknown format", value[4:])
+                    exit(-1)
                     
             else:
                 print("unbekannter Sensor: ", self.device_on_port[port], ":", value[4:])
