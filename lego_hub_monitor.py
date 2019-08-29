@@ -79,15 +79,15 @@ class BoostDevice(gatt.Device):
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
-    DEVICES = { "WeDo-2.0 motor": 0x01, "White LED pair": 0x08,
+    DEVICES = { "Motor M": 0x01, "White LED pair": 0x08,
                 "Voltage sensor": 0x14, "Current sensor": 0x15,
                 "Speaker": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
                 "WeDo-2.0 motion sensor": 0x23, "WeDo-2.0 generic sensor": 0x24,
                 "Boost color and distance sensor": 0x25,
                 "Boost interactive motor": 0x26,
                 "Boost builtin motor": 0x27,
-                "Technic interactive motor M": 0x2e,
-                "Technic interactive motor L": 0x2f,
+                "Powered Up motor L": 0x2e,
+                "Powered Up motor XL": 0x2f,
                 "Impact sensor": 0x36,
                 "Accelerometer": 0x39,
                 "Gyroscope": 0x3a,
