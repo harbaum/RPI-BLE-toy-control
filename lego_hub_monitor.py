@@ -218,10 +218,10 @@ class BoostDevice(gatt.Device):
         self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
 
     def current_sensor_set_mode(self, port, mode):
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1000))
         
     def voltage_sensor_set_mode(self, port, mode):
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1000))
 
     def motor_report_rotation(self, port, mode):
         # mode = 0: Unbekannte Eregnisse für beide Motoren A+B

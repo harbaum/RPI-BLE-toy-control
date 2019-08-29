@@ -1,80 +1,92 @@
-# BLE-Beispiele
+# Bluetooth construction toys BLE examples
 
-Dieses Repository enthält Beispiele zur Bluetooth-LE-Kopplung von
-Raspberry-Pi3 und fischertechnik-BT-Smart-Controller,
-fischertechnik-BT-Control-Receiver oder einem Lego-WeDo-2.0-Hub wie in
-[c't 18/2017 S. 144ff](https://www.heise.de/ct/ausgabe/2017-18-Spielzeug-Roboter-mit-dem-Raspberry-Pi-steuern-3798159.html) beschrieben.
+This repository contains examples how to connect a
+Raspberry Pi or any Linux PC with the fischertechnik
+bluetooth controllers or the Lego Wedo 2.0, Boost or later
+controllers.
 
-## Shell-Skripte
+Part of this was published in
+[c't 18/2017 S. 144ff](https://www.heise.de/ct/ausgabe/2017-18-Spielzeug-Roboter-mit-dem-Raspberry-Pi-steuern-3798159.html).
 
-Für die Shell-Scripte sind keine weiteren Installationen nötig. Sie
-laufen auf einem Raspbian-Jessie-Lite-Standardinstallation.
+## Shell scripts
 
-- [`batterie.sh`](batterie.sh) ist ein einfaches Bash-Shellskript, das
-  permanent nach BLE-Geräten sucht und für jedes gefundene Gerät
-  versucht, den Batterielevel auszulesen.
+The shell scripts don't require any further installations. They
+run on any Raspbian Jessie standard installation and later or
+any Debian or Ubuntu PC.
 
-- [`ft_bt_smart_led_blink.sh`](ft_bt_smart_led_blink.sh) ist eim
-  einfaches Bash-Shellskript, das die orange und blaue LED des
-  BT-Smart-Controller im Wechsel blinken lässt. Wird das Skript ohne
-  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
-  Controller. Dafür sind root-Rechte nötig. Wird eine
-  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
-  und es sind keine Root-Rechte nötig.
+- [`batterie.sh`](batterie.sh) is a simple shell script that
+  searches for BLE devicesm connects to them and tries to
+  read the battery level.
 
-- [`ft_bt_remote_led_blink.sh`](ft_bt_remote_led_blink.sh) ist eim
-  einfaches Bash-Shellskript, das die orange und blaue LED des
-  BT-Control-Receivers im Wechsel blinken lässt. Wird das Skript ohne
-  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
-  Empfänger. Dafür sind root-Rechte nötig. Wird eine
-  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
-  und es sind keine Root-Rechte nötig.
+- [`ft_bt_smart_led_blink.sh`](ft_bt_smart_led_blink.sh) is a bash
+  shell script which searches for the fischertechnik BT-Smart-Controller,
+  connects to it and toggles between the orange and blue interal
+  LEDs of that controller. Root permissions are required for the
+  automatic device detection. If a bluetooth MAC address is provided
+  on the command line then regular permissions are sufficient.
 
-- [`lego_wedo_led_blink.sh`](lego_wedo_led_blink.sh) blinkt mit der
-  LED des WeDo-Hub im Wechsel orange und blau. Wird das Skript ohne
-  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
-  Controller. Dafür sind root-Rechte nötig. Wird eine
-  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
-  und es sind keine Root-Rechte nötig.
+- [`ft_bt_remote_led_blink.sh`](ft_bt_remote_led_blink.sh) is a bash
+  shell script which searches for the fischertechnik BT-Control-Receiver,
+  connects to it and toggles between the orange and blue interal
+  LEDs of that controller. Root permissions are required for the
+  automatic device detection. If a bluetooth MAC address is provided
+  on the command line then regular permissions are sufficient.
 
-- [`lego_boost_led_blink.sh`](lego_boost_led_blink.sh) blinkt mit der
-  LED des Boost-Hub im Wechsel orange und blau. Wird das Skript ohne
-  Parameter aufgerufen, dann suche es selbsttätig nach einem passenden
-  Controller. Dafür sind root-Rechte nötig. Wird eine
-  Bluetooth-Adresse als Parameter übergeben, dann wird diese genutzt
-  und es sind keine Root-Rechte nötig.
+- [`lego_wedo_led_blink.sh`](lego_wedo_led_blink.sh) toggles the
+  LED of the WeDo2.0 Hub between orange and blue. If the script
+  is being invoked without parameters it will automatically search
+  for matching devices. This requires root permissions. If a bluetooth
+  MAC address is given as a parameter then it will be used instead
+  and no root permissions are required.
 
-## Python-Skripte
+- [`lego_boost_led_blink.sh`](lego_boost_led_blink.sh) toggles the
+  LED of the Lego Boost Hub between orange and blue. If the script
+  is being invoked without parameters it will automatically search
+  for matching devices. This requires root permissions. If a bluetooth
+  MAC address is given as a parameter then it will be used instead
+  and no root permissions are required.
 
-Die Python-Skripte benötigen neben der bereits bei der
-Standardinstalltion eines Raspbian-Jessie-Lite zusätzliche Pakete. Vor
-allem wird für python-gatt eine neuere Version des BlueZ-Stacks
-benötigt als bei jessie mitgeliefert.
+## Python scripts
 
-Das Script `[python-gatt-install.sh](python-gatt-install.sh)` nimmt
-die nötgen Änderungen automatisch vor.
+The pythons scripts need additional packages which are usually
+not installed by default. The python gatt package is required
+and can e.g. be installed like this:
 
-- [`ft_karussell.py`](ft_karussell.py) kontrolliert das
-  Karussell-Modell aus dem BT-Smart-Beginner-Set.  Auf Tastendruck
-  startet das Karussel, erhöht langsam seine Geschwindigkeit, läuft
-  für 30 Sekunden und bremst langsam wieder ab.
+```
+$ pip3 search gatt
+gatt (0.2.7)               - Bluetooth GATT SDK for Python
+jumper-ble-logger (0.1.3)  - Jumper GATT proxy for logging BLE traffic
+pygatt (4.0.3)             - Python Bluetooth LE (Low Energy) and GATT Library
+vernierpygatt (3.2.0)      - Python Bluetooth LE (Low Energy) and GATT Library
+$ pip3 install gatt
+...
 
-- [`lego_dino.py`](lego_dino.py) steuert das Dinosaurier-Modell aus
-  dem Lego-WeDo-2.0-Baukasten. Der Bewegungssensor wird ausgewertet,
-  um die LED am Dino zu färben. Befindet sich ein Hindernis direkt vor
-  dem Dino, dann wird zusätzlich der Motor eingeschaltet.
+```
 
-- [`ft_rc_racer.py`](ft_rc_racer.py) kontrolliert das
-  Rennauto aus dem BT-Racing-Set. Er beschleunigt sanft, fährt
-  2 Sekunden gerade, lenkt ein, fährt 2 Sekunden um die Kurve und
-  bremst dann sanft ab.
+On older Linux version the script `[python-gatt-install.sh](python-gatt-install.sh)`
+may help setting up bluetooth/python/gatt.
 
-- [`lego_boost_color_echo.py`](lego_boost_color_echo.py) liest einen
-  Farbwert vom angeschlossenen Farbsensor und "spiegelt" diese Farbe
-  an der eingebauten LED.
+- [`ft_karussell.py`](ft_karussell.py) controls the caroussell
+  model from the BT-Smart-Beginner-Set. On button press the
+  caroussell starts, slowly speeds up, runs for 30 seconds
+  and finally slows down.
 
-- [`lego_boost_monitor.py`](lego_boost_monitor.py) gibt alle bekannten
-  Ereignisse im Klartext aus. Dabei werden auch WeDo-2.0-Sensoren
-  am Boost erkannt und deren Werte ausgegeben. Beinhaltet eine
-  komplette Boost-Klasse zum Lesen und Setzen aller bekannten
-  Sensoren und Aktoren inkl. aller Sensoren und Aktoren des WeDo-2.0
+- [`lego_wed_dino.py`](lego_wedo_dino.py) controls the dinosaur
+  from the Lego WeDo 2.0 kit. The motions sensor is being evaluated
+  to colorize the LED. Additionally if something is detected right
+  in front of the sensor then the motor is being run.
+
+- [`ft_rc_racer.py`](ft_rc_racer.py) controls the car from the
+  fischertechnik BT-Racing-Set. The car speeds up 2 seconds,
+  turns 2 seconds and slows down 2 seconds.
+
+- [`lego_boost_color_echo.py`](lego_boost_color_echo.py) reads the
+  value of the color sensor and "mirrors" the color onto the
+  boosts internal LED.
+
+- [`lego_hub_monitor.py`](lego_hub_monitor.py) processes all known
+  signals and events of the Lego Boost, the Lego Hub NO.4, the
+  Technic Hub or later.
+
+  All known peripherals are supported incl. the sensors from
+  the WeDo 2.0 set.
