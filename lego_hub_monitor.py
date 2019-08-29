@@ -185,7 +185,7 @@ class BoostDevice(gatt.Device):
         self.send_cmd(0x01, struct.pack(">bbb", 1, 2, 0))  # die '1' adressiert den Gerätenamen (vgl. Button)
 
     def generic_set_mode(self, port, mode):
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
 
     def color_dist_sensor_set_mode(self, port, mode):
         # mode = 0: Vier Bytes-Ergebnis, letztes Byte scheint Hindernis anzuzeigen
@@ -196,38 +196,38 @@ class BoostDevice(gatt.Device):
         # mode = 6: Sensor liefert 3*2 Byte RGB-Werte
         # mode = 7: Sensor leuchtet nicht
         # mode = 8: Sensor liefert Distanz und Farb-Index
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
 
     def tilt_sensor_set_mode(self, port, mode):
         # mode = 0: Neigung in zwei Winkeln
         # mode = 1: Unbekanntes 1-Byte-Format
         # mode = 2: grobe Neigung (links, rechts, vorwärts, ...)         
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
 
     def wedo_tilt_sensor_set_mode(self, port, mode):
         # mode = 0: Neigung in zwei Winkeln
         # mode = 1: grobe Neigung (links, rechts, vorwärts, ...)         
         # mode = 2: Ereignis-Zähler
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
 
     def wedo_motion_sensor_set_mode(self, port, mode):
         # mode 0: Distanz ungefähr in cm von 0 bis 10
         # mode 1: Ereigniszähler
         # mode 2: Unbekanntes 6-Byte-Resultat
         # >2: nicht erlaubt (Fehlercode 5)
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
 
     def current_sensor_set_mode(self, port, mode):
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1000))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1000, 1))
         
     def voltage_sensor_set_mode(self, port, mode):
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1000))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1000, 1))
 
     def motor_report_rotation(self, port, mode):
         # mode = 0: Unbekannte Eregnisse für beide Motoren A+B
         # mode = 1: Winkel seit letztem Report melden
         # mode = 2: aufsummierten Winkel melden
-        self.send_cmd(0x41, struct.pack(">bbbL", port, mode, 1, 1))
+        self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
         
     def led_set_color(self, color=0):
         if isinstance(color, int ):
