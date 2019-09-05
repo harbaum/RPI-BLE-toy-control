@@ -136,13 +136,9 @@ class BoostDevice(gatt.Device):
                     characteristic.enable_notifications()
                     self.ch = characteristic
                     
-                    # self.button_set_config(3)  # keine erkennbare Reaktion
-                    self.button_set_config(2)    # automatische Reports einschalten
-                    # self.button_set_config(1)  # -> verursacht unbekannten Ereignis-Typ 5
-        
+                    self.set_hub_property(2,2)    # button reports
                     self.led_set_color("orange") # LED auf orange schalten
-
-                    self.request_device_name()
+                    self.set_hub_property(1,2)    # request name
                     
     def characteristic_enable_notification_succeeded(self, characteristic):
         super().characteristic_enable_notification_succeeded(characteristic)
@@ -176,13 +172,10 @@ class BoostDevice(gatt.Device):
         else:
             self.output_queue.append(cmd_seq)
         
-    def button_set_config(self, code):
-        # code 1 und 3 werden von der Tablet-App genutzt, haben aber unbekannte
-        # Funktion. Code 2 schaltet die permanente Button-Abfrage ein
-        self.send_cmd(1, bytes( [2, code] ))   # die '2' scheint den Button zu beschreiben
-
-    def request_device_name(self):
-        self.send_cmd(0x01, struct.pack(">bbb", 1, 2, 0))  # die '1' adressiert den Gerätenamen (vgl. Button)
+    def set_hub_property(self, property, operation):
+        # properties  1=name, 2=button, ....
+        # operations 2=enable updates
+        self.send_cmd(0x01, bytes( [property, operation] ))
 
     def generic_set_mode(self, port, mode):
         self.send_cmd(0x41, struct.pack("<bbLb", port, mode, 1, 1))
@@ -298,7 +291,13 @@ class BoostDevice(gatt.Device):
             if lid == id:
                 return ticks + name + ticks
         return "<unknown device id: "+str(id)+">"
-        
+
+    def request_port_information(self,port):
+        self.send_cmd(0x21, struct.pack("<BB", port, 0x01))    # request port mode information
+
+    def request_port_mode_information(self,port,mode,type):
+        self.send_cmd(0x22, struct.pack("<BBB", port, mode,type))
+    
     def characteristic_value_updated(self, characteristic, value):
         # teste, ob Längenfeld stimmt, ignoriere die Meldung falls nicht
         if struct.unpack('b', value[0:1])[0] != len(value):
@@ -307,110 +306,151 @@ class BoostDevice(gatt.Device):
         # extrahiere den Meldungstyp
         type = struct.unpack('>H', value[1:3])[0]
 
-        if type == 1:  # Button-/Name-Ereignis
-            # Byte value[4] scheint immer 6 zu sein ...
-
+        if type == 0x01:  # Hub property event
             subtype = struct.unpack('b', value[3:4])[0]
             if subtype == 1:
-                print("Ereignis: Gerätename:", value[5:].decode("utf-8") )
+                print("Hub property device name:", value[5:].decode("utf-8") )
             elif subtype == 2:
                 status = struct.unpack('x?', value[4:6])[0]
-                print("Ereignis: Button, Status:", status)
+                print("Hub property button status:", status)
             else:
-                print("Ereignis: unbekanntes Ereignis", subtype)
+                print("Hub property unknown:", hex(subtype))
             
-        elif type == 4:  # Port-Konfigurations-Ereignis
+        elif type == 0x04:  # Hub Attached I/O
             port, event = struct.unpack('bb', value[3:5])
 
             # Details zum Port-Konfigurations-Ereignis ausgeben
-            print("Ereignis: Port-Konfiguration, Port-Name:", self.port_name(port, '"') + ", ", end="")
+            print("Event: Port configuration, port name:", self.port_name(port, '"') + ", ", end="")
             if event == 0:
                 # Event 0: Ein Gerät wurde vom Boost getrennt
-                print("Gerät getrennt")
+                print("Device on port", hex(port), "disconnected")
                 self.device_on_port[port] = None
             elif event == 1:
-                # Event 1: Ein Gerät wurde vom Boost neu erkannt
-                # Dieser Event wird auch initial für jedes verbundene Gerät
-                # einmal geschickt
+                # hub attach event
                 dev = struct.unpack('b', value[5:6])[0]
                 self.device_on_port[port] = dev
-                print("Gerät verbunden:", self.device_name(dev, '"'))
+                print("Device connected:", self.device_name(dev, '"'))
 
-                if dev == 0x01:
-                    self.motor_run(port, 25)
+                # request port information
+                self.request_port_information(port)
+                
+                # set to true to trigger some default operation for many devices
+                if True: # False:
+                    if dev == 0x01:
+                        self.motor_run(port, 25)
                       
-                if dev == 0x08:
-                    self.motor_run(port, 100)   # the LED pair uses the same command as the simple motor
+                    if dev == 0x08:
+                        self.motor_run(port, 100)   # the LED pair uses the same command as the simple motor
                     
-                if dev == 0x14:
-                    self.voltage_sensor_set_mode(port, 0)
+                    if dev == 0x14:
+                        self.voltage_sensor_set_mode(port, 0)
 
-                if dev == 0x15:
-                    self.current_sensor_set_mode(port, 0)
+                    if dev == 0x15:
+                        self.current_sensor_set_mode(port, 0)
 
-                if dev == 0x22:
-                    self.wedo_tilt_sensor_set_mode(port, 0)
+                    if dev == 0x22:
+                        self.wedo_tilt_sensor_set_mode(port, 0)
                     
-                if dev == 0x23:
-                    self.wedo_motion_sensor_set_mode(port, 1)
+                    if dev == 0x23:
+                        self.wedo_motion_sensor_set_mode(port, 1)  # test in count mode
                 
-                # wenn ein Farbsensor gefunden wurde, dann schalte ihn ein
-                if dev == 0x25:
-                    self.color_dist_sensor_set_mode(port, 8)  # z.B. 6 ist RGB, 8 ist Farb-Index+Distanz
+                    # wenn ein Farbsensor gefunden wurde, dann schalte ihn ein
+                    if dev == 0x25:
+                        self.color_dist_sensor_set_mode(port, 8)  # z.B. 6 ist RGB, 8 ist Farb-Index+Distanz
                     
-                # Wenn ein interaktiver Motor gefunden wurde: Drehe ihn einmal
-                # langsam 360°
-                if dev == 0x26 or dev == 0x2e or dev == 0x2f:
-                    self.motor_report_rotation(port, 2)
-                    self.motor_run_angle(port, 25, 360)  
+                    # Wenn ein interaktiver Motor gefunden wurde: Drehe ihn einmal
+                    # langsam 360°
+                    if dev == 0x26 or dev == 0x2e or dev == 0x2f:
+                        self.motor_report_rotation(port, 2)
+                        self.motor_run_angle(port, 25, 360)  
 
-                if dev == 0x27:
-                    self.motor_report_rotation(port, 1)
+                    if dev == 0x27:
+                        self.motor_report_rotation(port, 1)
                     
-                # wenn ein Tiltsensor gefunden wurde, dann schalte ihn ein
-                if dev == 0x28:
-                    self.tilt_sensor_set_mode(port, 0)
+                    # wenn ein Tiltsensor gefunden wurde, dann schalte ihn ein
+                    if dev == 0x28:
+                        self.tilt_sensor_set_mode(port, 0)
                     
-                # technic hub sensor "impact" sensor
-                if dev == 0x36:
-                    self.generic_set_mode(port, 0)
+                    # technic hub sensor "impact" sensor
+                    if dev == 0x36:
+                        self.generic_set_mode(port, 0)
 
-                # technic hub 3 axis accelerometer
-                if dev == 0x39:
-                    self.generic_set_mode(port, 0)
+                    # technic hub 3 axis accelerometer
+                    if dev == 0x39:
+                        self.generic_set_mode(port, 0)
 
-                # technic hub 3 axis gyroscope
-                if dev == 0x3a:
-                    self.generic_set_mode(port, 0)
+                    # technic hub 3 axis gyroscope
+                    if dev == 0x3a:
+                        self.generic_set_mode(port, 0)
 
-                # technic hub 3 axis angle
-                if dev == 0x3b:
-                    self.generic_set_mode(port, 0)
+                    # technic hub 3 axis angle
+                    if dev == 0x3b:
+                        self.generic_set_mode(port, 0)
                 
-                # temperature
-                if dev == 0x3c:
-                    self.generic_set_mode(port, 0)
+                    # temperature
+                    if dev == 0x3c:
+                        self.generic_set_mode(port, 0)
                 
-                # unknown boost sensor
-                if dev == 0x42:
-                    self.generic_set_mode(port, 0)
+                    # unknown boost sensor
+                    if dev == 0x42:
+                        self.generic_set_mode(port, 0)
               
             elif event == 2:
-                # Event 2: Eine Verbindung zwischen zwei Ports wird angezeigt.
-                # Dies wird vom Boost genutzt, um die beiden internen Motoren
-                # mit einem Kommando gemeinsam schalten zu können
+                # setup of a virtual device complete
                 dev, port1, port2 = struct.unpack('bxbb', value[5:9])
-                print("Geräte gekoppelt:",  self.device_name(dev, '"'), "an Ports",
-                      self.port_name(port1, '"'), "und", self.port_name(port2, '"'))
+                print("Devices coupled:",  self.device_name(dev, '"'), "on ports",
+                      self.port_name(port1, '"'), "and", self.port_name(port2, '"'))
             else:
-                print("unbekanntes Port-Ereignis", event)
+                print("Unknown port event", event)
 
-        elif type == 5:  # anscheinend Fehler-Eregnis, Inhalt bisher weigehend unbekannt
-            print("Ereignis: FEHLER", value[3:])
+        elif type == 0x05:
+            print("Error event", value[3:])
+            
+        elif type == 0x43:
+            port,itype = struct.unpack('BB', value[3:5])
+            print("Event: Port information: Port name:",  self.port_name(port,'"') + ", ", end="");
+            if itype == 0x01:
+                cap,count,imodes,omodes=struct.unpack('<BBHH', value[5:11])
+                caps = ""
+                if cap&1: caps += "Output,"
+                if cap&2: caps += "Input,"
+                if cap&4: caps += "Logical Combinable,"
+                if cap&8: caps += "Logical Synchronizable,"
+                print("mode info", caps, "#modes:", count, "input:", imodes, "output", omodes)
+
+                # request info for all modes
+                for i in range(count):
+                    self.request_port_mode_information(port,i,0x00)   # 0x00 = name
+                    self.request_port_mode_information(port,i,0x01)   # 0x01 = raw range
+                    self.request_port_mode_information(port,i,0x02)   # 0x02 = pct range
+                    self.request_port_mode_information(port,i,0x03)   # 0x03 = si range
+                    self.request_port_mode_information(port,i,0x04)   # 0x04 = symbol
+            else:
+                print("unsupported info type", hex(itype));
+            
+        elif type == 0x44:
+            port,mode,itype = struct.unpack('BBB', value[3:6])
+            print("Event: Port mode information: Port name:",  self.port_name(port,'"') + ", ", end="");
+            print("mode:", mode, ", ", end="");
+            if itype == 0x00:
+                print("name:", value[6:].decode('ascii'))
+            elif itype == 0x01:
+                min,max = struct.unpack('<ff', value[6:])
+                print("raw min:", min, "max:", max);
+            elif itype == 0x02:
+                min,max = struct.unpack('<ff', value[6:])
+                print("pct min:", min, "max:", max);
+            elif itype == 0x03:
+                min,max = struct.unpack('<ff', value[6:])
+                print("si min:", min, "max:", max);
+            elif itype == 0x04:
+                print("symbol:", value[6:].decode('ascii'))
+            else:
+                print("unknown information type", hex(itype))
             
         elif type == 0x45:
-            port = struct.unpack('b', value[3:4])[0]
-            print("Port-Ereignis: Port:", self.port_name(port,'"') + ", ", end="")
+            port = struct.unpack('B', value[3:4])[0]
+            print("Port event: Port:", self.port_name(port,'"') + ", ", end="")
 
             # Bearbeite je nach Sensor, der vorher an diesem Port erkannt wurde
 
@@ -562,7 +602,7 @@ class BoostDevice(gatt.Device):
                 print("Unbekannter Code:", code)
             
         else:
-            print("Unbekanntes Ereignis", type, "Daten:", value[3:])
+            print("Unknown event", hex(type), "data:", value[3:])
         
 # Hintergrund-Prozess starten, der den GATT-DBus bedient
 manager = BoostDeviceManager(adapter_name='hci0')
