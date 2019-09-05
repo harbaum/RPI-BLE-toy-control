@@ -65,7 +65,7 @@ class BoostDevice(gatt.Device):
     
     IMPACT = { "still": 0, "light hit": 1, "heavy hit/shake": 2, "shake": 3, "falling": 4 }
 
-    # Klartextbezeichnungen der Anschlüsse (auch interne)
+    # the ports have no special meanings, but we can name them from experience
     PORTS = { "A": 0x00, "B": 0x01, "C": 0x02, "D": 0x03, "A+B": 0x10,
               "LED": 0x32, "Int. tilt": 0x3a, "Current": 0x3b,
               "Voltage": 0x3c,
@@ -79,11 +79,12 @@ class BoostDevice(gatt.Device):
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
-    DEVICES = { "Motor M": 0x01, "White LED pair": 0x08,
+    DEVICES = { "Motor M": 0x01, "System Train Motor":0x02, "Button":0x05,
+                "White LED Light pair": 0x08,
                 "Voltage sensor": 0x14, "Current sensor": 0x15,
-                "Speaker": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
+                "Piezo": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
                 "WeDo-2.0 motion sensor": 0x23, "WeDo-2.0 generic sensor": 0x24,
-                "Boost color and distance sensor": 0x25,
+                "Vision sensor": 0x25,
                 "Boost interactive motor": 0x26,
                 "Boost builtin motor": 0x27,
                 "Powered Up motor L": 0x2e,
