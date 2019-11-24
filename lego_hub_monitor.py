@@ -22,7 +22,7 @@ except ModuleNotFoundError as e:
 # GATT Device-Manager, um selektiv nach Lego-Boost-Controllern zu suchen
 class BoostDeviceManager(gatt.DeviceManager):
     OIDS = [ "00:16:53", "90:84:2b" ] 
-    NAMES = [ "LEGO Move Hub", "HUB NO.4", "Technic Hub" ]
+    NAMES = [ "LEGO Move Hub", "HUB NO.4", "Technic Hub", "Smart Hub" ]
     
     def __init__(self, adapter_name='hci0'):
         super().__init__(adapter_name=adapter_name)
@@ -79,8 +79,10 @@ class BoostDevice(gatt.Device):
 
     # Klartextbezeichnungen der möglichen an den Boost angeschlossenen Geräte
     # (auch interne und WeDo-2.0-Geräte), der Boost hat keinen Speaker
-    DEVICES = { "Motor M": 0x01, "System Train Motor":0x02, "Button":0x05,
-                "White LED Light pair": 0x08,
+    DEVICES = { "Motor M": 0x01, "Train Motor":0x02,
+                "Turn":0x03, "Power":0x04, "Button":0x05,
+                "Motor L": 0x06,"Motor X": 0x07,
+                "Light": 0x08, "Light 1": 0x09, "Light 2": 0x0a,
                 "Voltage sensor": 0x14, "Current sensor": 0x15,
                 "Piezo": 0x16, "RGB LED": 0x17, "WeDo-2.0 tilt sensor": 0x22,
                 "WeDo-2.0 motion sensor": 0x23, "WeDo-2.0 generic sensor": 0x24,
@@ -336,7 +338,7 @@ class BoostDevice(gatt.Device):
                 self.request_port_information(port)
                 
                 # set to true to trigger some default operation for many devices
-                if True: # False:
+                if dev == 0x05: # False: # True: # False:
                     if dev == 0x01:
                         self.motor_run(port, 25)
                       
